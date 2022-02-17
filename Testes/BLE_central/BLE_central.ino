@@ -32,41 +32,42 @@ void loop() {
     // print address
     Serial.print("Address: ");
     Serial.println(peripheral.address());
-
+    
     // print the local name, if present
     if (peripheral.hasLocalName()) {
       Serial.print("Local Name: ");
       Serial.println(peripheral.localName());
     }
+    
     if (peripheral.localName() == "Nano33BLE"){
+      
       peripheral.connect();
       Serial.println("Nano33BLE conectado");
-    }
-
-    // print the advertised service UUIDs, if present
-    if (peripheral.hasAdvertisedServiceUuid()) {
-      Serial.print("Service UUIDs: ");
-      for (int i = 0; i < peripheral.advertisedServiceUuidCount(); i++) {
-        Serial.print(peripheral.advertisedServiceUuid(i));
-        Serial.print(" ");
+      
+      while(peripheral.connect()){
+        
+        // print the advertised service UUIDs, if present
+        if (peripheral.hasAdvertisedServiceUuid()) {
+          Serial.print("Service UUIDs: ");
+          for (int i = 0; i < peripheral.advertisedServiceUuidCount(); i++) {
+            Serial.print(peripheral.advertisedServiceUuid(i));
+            Serial.print(" ");
+          }
+          Serial.println();
+        }
+        
+        // print the RSSI
+        Serial.print("RSSI: ");
+        Serial.println(peripheral.rssi());
+    
+        // print the distance
+        Serial.print("Distance: ");
+        float distance = pow(10,((measured_power-peripheral.rssi())/(10*N)));
+        Serial.print(distance);
+        Serial.println(" m");
+        Serial.println(" ");
       }
-      Serial.println();
-    }
-
-    // print the RSSI
-    Serial.print("RSSI: ");
-    Serial.println(peripheral.rssi());
-
-    // print the distance
-    Serial.print("Distance: ");
-    float distance = pow(10,((measured_power-peripheral.rssi())/(10*N)));
-    Serial.print(distance);
-    Serial.println(" m");
-    Serial.println(" ");
-
-    if (peripheral.localName() == "Nano33BLE"){
-        peripheral.disconnect();
-        Serial.println("Nano33BLE desconectado");
+      Serial.println("Nano33BLE desconectado");
     }
   }
 }

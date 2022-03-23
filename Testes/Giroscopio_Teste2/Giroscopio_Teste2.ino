@@ -72,6 +72,6 @@ void loop() {
     //Serial.print(pitch);
     //Serial.print(" ");
     //Serial.println(roll);
-    delay(500)
+    delay(200)
   }
 }

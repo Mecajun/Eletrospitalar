@@ -51,20 +51,27 @@ void loop() {
     else{
       // procura detectar movimento, tentando "ignorar" a compensação do próprio módulo
       // funciona comparando o roll com o oldRoll, por exemplo, caso a variação seja maior do que a minima definida (no caso, 3 graus), dá alerta. O menor de 89 serve para o caso de uma virada completa, de 90 para 0, por exemplo.
-      if (abs(roll - oldRoll) > 3 and abs(roll - oldRoll) < 89){
+      if (abs(abs(roll) - abs(oldRoll)) > 3 and abs(abs(roll) - abs(oldRoll)) < 85){
         Serial.println("Movimento detectado!");
       }
-      if (abs(pitch - oldPitch) > 3 and abs(roll - oldPitch) < 89){
+      Serial.print("Roll:");
+      Serial.println(abs(abs(roll) - abs(oldRoll)));
+      if (abs(abs(pitch) - abs(oldPitch)) > 3 and abs(abs(roll) - abs(oldPitch)) < 85){
         Serial.println("Movimento detectado!");
       }
-      if (abs(heading - oldHeading) > 3 and abs(heading - oldHeading) < 359){
+      Serial.print("Pitch:");
+      Serial.println(abs(abs(pitch) - abs(oldPitch)));
+      if (abs(abs(heading) - abs(oldHeading)) > 3 and abs(abs(heading) - abs(oldHeading)) < 355){
         Serial.println("Movimento detectado!");
       }
+      Serial.print("Heading:");
+      Serial.println(abs(abs(heading) - abs(oldHeading)));
     }
     // atribui a primeira leitura ao valor "old"
     oldRoll = roll;
     oldPitch = pitch;
     oldHeading = heading;
+    delay(200);
     // Caso queira printar os valores tambem
     //Serial.print("Orientacao: ");
     //Serial.print(heading);
@@ -72,6 +79,6 @@ void loop() {
     //Serial.print(pitch);
     //Serial.print(" ");
     //Serial.println(roll);
-    delay(200)
+    
   }
 }

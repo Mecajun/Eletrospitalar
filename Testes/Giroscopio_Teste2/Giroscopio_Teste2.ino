@@ -5,8 +5,11 @@
 Madgwick filter;
 // o sample rate do sensor é de 104 Hz:
 const float sensorRate = 104.00;
-float oldRoll, oldPitch, oldHeading;
+float xoldAcc, yoldAcc, zoldAcc, xVel, yVel, zVel, xoldVel, yoldVel, zoldVel;
+float xDist, yDist, zDist, Dist, t;
+float Lista[60];
 float *pRoll = NULL;
+int i;
 
 void setup() {
   Serial.begin(9600);
@@ -23,62 +26,76 @@ void setup() {
 }
 
 void loop() {
-  // valores para a aceleração (Acc) e rotação (Gyro)
+  // valores para a aceleração (Acc) 
   float xAcc, yAcc, zAcc;
-  float xGyro, yGyro, zGyro;
-
-  // valores de orientacao e comparacao:
-  float roll, pitch, heading;
   
   // checa a capacidade de leitura do IMU
-  if (IMU.accelerationAvailable() &&
-      IMU.gyroscopeAvailable()) {
+  if (IMU.accelerationAvailable()) {
     // lê e atribui os valores de aceleração e rotação:
     IMU.readAcceleration(xAcc, yAcc, zAcc);
-    IMU.readGyroscope(xGyro, yGyro, zGyro);
 
     // atualiza o filtro, o qual computa a orientação
-    filter.updateIMU(xGyro, yGyro, zGyro, xAcc, yAcc, zAcc);
+    filter.updateIMU(xAcc, yAcc, zAcc);
 
-    // define o direcionamento axial (heading), inclinação frontal (pitch) e lateral (roll).
-    roll = filter.getRoll();
-    pitch = filter.getPitch();
-    heading = filter.getYaw();
+    // conversão da aceleração de g para m/s2
+    xAcc = xAcc*9.80665;
+    yAcc = yAcc*9.80665;
+    zAcc = zAcc*9.80665;
+
+    // tempo a cada verificação
+    t = 1;
     
-    if (pRoll == NULL){
-      pRoll = &oldRoll;
-    }
-    else{
-      // procura detectar movimento, tentando "ignorar" a compensação do próprio módulo
-      // funciona comparando o roll com o oldRoll, por exemplo, caso a variação seja maior do que a minima definida (no caso, 3 graus), dá alerta. O menor de 89 serve para o caso de uma virada completa, de 90 para 0, por exemplo.
-      if (abs(abs(roll) - abs(oldRoll)) > 3 and abs(abs(roll) - abs(oldRoll)) < 85){
-        Serial.println("Movimento detectado!");
-      }
-      Serial.print("Roll:");
-      Serial.println(abs(abs(roll) - abs(oldRoll)));
-      if (abs(abs(pitch) - abs(oldPitch)) > 3 and abs(abs(roll) - abs(oldPitch)) < 85){
-        Serial.println("Movimento detectado!");
-      }
-      Serial.print("Pitch:");
-      Serial.println(abs(abs(pitch) - abs(oldPitch)));
-      if (abs(abs(heading) - abs(oldHeading)) > 3 and abs(abs(heading) - abs(oldHeading)) < 355){
-        Serial.println("Movimento detectado!");
-      }
-      Serial.print("Heading:");
-      Serial.println(abs(abs(heading) - abs(oldHeading)));
-    }
-    // atribui a primeira leitura ao valor "old"
-    oldRoll = roll;
-    oldPitch = pitch;
-    oldHeading = heading;
-    delay(200);
-    // Caso queira printar os valores tambem
-    //Serial.print("Orientacao: ");
-    //Serial.print(heading);
-    //Serial.print(" ");
-    //Serial.print(pitch);
-    //Serial.print(" ");
-    //Serial.println(roll);
+    // calculo do movimento em cada eixo usando a regra dos trapezios
+    xVel = (xoldVel + (xoldAcc + xAcc))*t/2;
+    xDist = (xDist + (xoldVel + xVel))*t/2;
     
+    yVel = (yoldVel + (yoldAcc + yAcc))*t/2;
+    yDist = (yDist + (yoldVel + yVel))*t/2;
+    
+    zVel = (zoldVel + (zoldAcc + zAcc))*t/2;
+    zDist = (zDist + (zoldVel + zVel))*t/2;
+
+    Dist = (sqrt(pow(xDist, 2) + pow(yDist, 2) + pow(zDist, 2)))*100 + Dist;
+    Lista[i] = Dist;
+    if Dist >= 10{
+      Serial.print("Movimento detectado: ");
+      Serial.print(Dist);
+      Serial.print(" cm");      
+    }
+    //Serial.print(xAcc);
+    //Serial.print('\t');
+    //Serial.print(yAcc);
+    //Serial.print('\t');
+    //Serial.println(zAcc);
+
+    xoldAcc = xAcc;
+    yoldAcc = yAcc;
+    zoldAcc = zAcc;
+    xoldVel = xVel;
+    yoldVel = yVel;
+    zoldVel = zVel;
+    i++;
+    
+    // reseta o indice e envia a lista
+    if i == 60{
+     i = 0;
+    }
+    
+    delay(1000);
+   }
+   // BLE parado, zera as distancias
+   Dist = 0.0;
+   xDist = 0.0;
+   yDist = 0.0;
+   zDist = 0.0;
+   Lista[i] = Dist;
+   i++;
+   delay(1000);
+
+   // resetar o indice e enviar a lista
+   if i == 60{
+    i = 0;
+   }
+   
   }
 }

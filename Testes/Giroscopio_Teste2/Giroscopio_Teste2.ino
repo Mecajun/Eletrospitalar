@@ -35,7 +35,7 @@ void loop() {
     IMU.readAcceleration(xAcc, yAcc, zAcc);
 
     // atualiza o filtro, o qual computa a orientação
-    filter.updateIMU(xAcc, yAcc, zAcc);
+    filter.updateIMU(xAcc, yAcc, zAcc, 0, 0, 0);
 
     // conversão da aceleração de g para m/s2
     xAcc = xAcc*9.80665;
@@ -57,16 +57,18 @@ void loop() {
 
     Dist = (sqrt(pow(xDist, 2) + pow(yDist, 2) + pow(zDist, 2)))*100 + Dist;
     Lista[i] = Dist;
-    if Dist >= 10{
+    if (Dist >= 10){
       Serial.print("Movimento detectado: ");
       Serial.print(Dist);
-      Serial.print(" cm");      
+      Serial.print(" cm");
+      Serial.print('\n');      
     }
-    //Serial.print(xAcc);
-    //Serial.print('\t');
-    //Serial.print(yAcc);
-    //Serial.print('\t');
-    //Serial.println(zAcc);
+    Serial.print(xAcc);
+    Serial.print('\t');
+    Serial.print(yAcc);
+    Serial.print('\t');
+    Serial.println(zAcc);
+    Serial.print('\n'); 
 
     xoldAcc = xAcc;
     yoldAcc = yAcc;
@@ -77,8 +79,12 @@ void loop() {
     i++;
     
     // reseta o indice e envia a lista
-    if i == 60{
-     i = 0;
+    if (i == 60){
+      for (i=60; i>0; i--){
+        Serial.print(Lista[i]);
+        Serial.print('\t');
+        }
+      i = 0;
     }
     
     delay(1000);
@@ -93,9 +99,12 @@ void loop() {
    delay(1000);
 
    // resetar o indice e enviar a lista
-   if i == 60{
-    i = 0;
+   if (i == 60){
+    for (i=60; i>0; i--){
+        Serial.print(Lista[i]);
+        Serial.print('\t');
+        }
+     i = 0;
    }
    
   }
-}

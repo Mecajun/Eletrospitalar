@@ -41,7 +41,7 @@ void loop() {
       Serial.println(distance);
       
       // definindo um limite de sinal para área de interesse
-      if (dist_rssi > (-100)) {
+      if (dist_rssi > (-68)) {
         Serial.println("dispositivo dentro da área de interesse");
         Serial.println(peripheral.localName());
 
